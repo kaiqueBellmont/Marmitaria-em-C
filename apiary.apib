@@ -1,31 +1,417 @@
 FORMAT: 1A
 HOST: #
 
-# KR public API 
+# API de valiidação de documentos da KR
 
-Polls is a simple API allowing consumers to view polls and vote in them.
+A API de validação de documentos da KR. Essa API permite o envio de documentos de pessoas físicas/jurídicas para análise e detecção de fraudes.
 
-## Token Create [/auth/token/create]
+## POST documents [/documents]
 
-### Create a personal token to allow a user make private requistions [POST]
++ Attributes
+  + file: base64_encoded_file_content (required, string) - Arquivo do documento para envio da análise encodado em Base64
+  + mime_type: application/pdf (required, string) - tipo do arquivo a ser enviado
+  + ref: string (string, optional) - referência do arquivo entre as bases
 
+### Upload de um documento para o servidor POST [POST]
+
+
+
++ Request (application/json)
+    + Headers
+
+            Authorization: token    
+    
+    + Body
+    
+            {   
+                "file": "base64_encoded_file_content",
+                "mime-type": "application/pdf",
+                "ref": "referência_do_arquivo_entre_as_bases"
+            }
+
+  
 + Response 200 (application/json)
 
-    
         {
-            "acess_token": "YEaskdhshdsaldkasdmasdas",
+            "message": "documento recebido",
+            "filename": "documento.pdf",
+            "mime_type": "application/pdf",
+            "size": 3567,
+            "url": "url/documents/documento.pdf"
         }
+
+
+  
++ Response 400 (text/plain)
+
+        {
+            "message": "Bad Request",
+        }
+
++ Response 401 (text/plain)
+
+        {
+            "message": "Unauthorized",
+        }
+
++ Response 403 (text/plain)
+
+        {
+            "message": "Forbidden",
+        }
+
++ Response 404 (text/plain)
+
+        {
+            "message": "Not Found",
+        }
+        
++ Response 409 (text/plain)
+
+        {
+            "message": "Conflict",
+        }
+
++ Response 415 (text/plain)
+
+        {
+            "message": "Unsupported Media Type",
+        }
+
++ Response 500 (text/plain)
+
+        {
+            "message": "Internal Server Error",
+        }
+
+
+## GET documents [/documents/documents{?starting_after,ending_before,validation_completed,limit}]
+
++ Attributes
+    + id: UUIDv4 (required, string) - ID do documento desejado
+    + ref: string (optional, string) - ref do documento entre as plataformas
+    + face_match_result: true (required, boolean) - resultado da analise de facematch   
+    + document_type: 1 (required, number) - tipo do documento
+  
+    + starting_after (number) - usado na paginação (iniciar após)
+    + ending_before (number) - usado na paginação (terminar antes)
+    + validation_completed: false (boolean) - utilizado no filtro (validação completa?)
+    + limit (number, optional) - Maximo de resultados a serem apresentados
+
+
+
+
+### Recuperar varios documentos do servidor GET [GET]
+
++ parameters
+    + starting_after: 0 (number, optional) - usado na paginação (iniciar após)
+    + ending_before: 5 (number, optional) - usado na paginação (terminar antes)
+    + validation_completed: false (boolean, optional) - utilizado no filtro (validação completa?)
+    + limit (number, optional) - Maximo de resultados a serem apresentados
+        + Default: `20`  
+    
+    
++ Request (application/json)
+    + Headers
+
+            Authorization: token    
     
 
 
-## Token refresh [/auth/token/refresh]
++ Response 200
 
-### refresh a user personal token [POST]
+        [
+            {
+            "id": "1",
+            "ref": "123ABC",
+            "face_match_result": true,
+            "document_type": 1,
+            "extracted_fields": {
+                "rg": "15-173-311",
+                "cpf": "123.456.789.10"
+            }
+            },
+            {
+            "id": "2",
+            "ref": "456ABC",
+            "face_match_result": true,
+            "document_type": 2,
+            "extracted_fields": {
+                "rg": "12-123-123",
+                "cpf": "123.123.342.36"
+            }
+            },
+            {
+            "id": "3",
+            "ref": "789ABC",
+            "face_match_result": true,
+            "document_type": 1,
+            "extracted_fields": {
+                "rg": "12-874-123",
+                "cpf": "089.653.118.23"
+            }
+            },
+            {
+            "id": "4",
+            "ref": "101ABC",
+            "face_match_result": true,
+            "document_type": 1,
+            "extracted_fields": {
+                "rg": "18-296-009",
+                "cpf": "187.912.284.23"
+            }
+            },
+            {
+            "id": "5",
+            "ref": "312ABC",
+            "face_match_result": true,
+            "document_type": 2,
+            "extracted_fields": {
+                "rg": "98-164-900",
+                "cpf": "088.734.726.23"
+            }
+            },
+        ]
+
+
+  
++ Response 400 (text/plain)
+
+        {
+            "message": "Bad Request",
+        }
+
++ Response 401 (text/plain)
+
+        {
+            "message": "Unauthorized",
+        }
+
++ Response 403 (text/plain)
+
+        {
+            "message": "Forbidden",
+        }
+
++ Response 404 (text/plain)
+
+        {
+            "message": "Not Found",
+        }
+        
+
++ Response 500 (text/plain)
+
+        {
+            "message": "Internal Server Error",
+        }
+        
+
+## GET documents/:id [/documents/{id}]
+
++ Attributes
+  + id: 1 (required, string) - ID do documento desejado
+
+
+### Recupera um unico documento do servidor [GET]
++ Parameters
+    + id (string) - ID do documento desejado
+
+
+
++ Request
+    + Headers
+
+            Authorization: token    
+    
+
 
 + Response 200 (application/json)
 
-    
+        
         {
-            "acess_token": "YEaskdhshdsaldkasdmasdas",
-            "refresh_token": "YEaskdhshdsaldkasdmasdas",
+            "id": "1",
+            "ref": "123ABC",
+            "face_match_result": true,
+            "document_type": 1,
+            "extracted_fields": {
+                "rg": "15-173-311",
+                "cpf": "123.456.789.10"
+            }
+        }
+        
+
+
+  
++ Response 400 (text/plain)
+
+        {
+            "message": "Bad Request",
+        }
+
++ Response 401 (text/plain)
+
+        {
+            "message": "Unauthorized",
+        }
+
++ Response 403 (text/plain)
+
+        {
+            "message": "Forbidden",
+        }
+
++ Response 404 (text/plain)
+
+        {
+            "message": "Not Found",
+        }
+        
+
++ Response 500 (text/plain)
+
+        {
+            "message": "Internal Server Error",
+        }
+
+
+## GET documents/:ref [/documents/{ref}]
+
++ Attributes
+  + ref: 123ABC (required, string) - A referência do documento desejado
+
+
+### Recupera um unico documento do servidor utilizando o campo ref [GET]
++ Parameters
+    + ref (string) - A referência do documento desejado
+
+
+
++ Request (application/json)
+    + Headers
+
+            Authorization: token    
+    
+
+
++ Response 200 (application/json)
+
+        
+        {
+            "id": 1,
+            "ref": "123ABC",
+            "face_match_result": true,
+            "document_type": 1,
+            "extracted_fields": {
+                "rg": "15-173-311",
+                "cpf": "123.456.789.10"
+            }
+        }
+        
+
+
+  
++ Response 400 (text/plain)
+
+        {
+            "message": "Bad Request",
+        }
+
++ Response 401 (text/plain)
+
+        {
+            "message": "Unauthorized",
+        }
+
++ Response 403 (text/plain)
+
+        {
+            "message": "Forbidden",
+        }
+
++ Response 404 (text/plain)
+
+        {
+            "message": "Not Found",
+        }
+        
+
++ Response 500 (text/plain)
+
+        {
+            "message": "Internal Server Error",
+        }
+
+
+
+## GET documents/:id_or_ref [/documents/{id_or_ref}]
+
++ Attributes
+  + id_or_ref: 1 (required, number) - ID ou ref do documento desejado para download
+
+
+### Redireciona para o download do documento especificado [GET]
++ Parameters
+    + id_or_ref (string) - ID ou ref do documento desejado para download
+
+
+
++ Request
+    + Headers
+
+            Authorization: token    
+    
+
+
++ Response 302 (application/json)
+
+
+  
++ Response 400 (text/plain)
+
+        {
+            "message": "Bad Request",
+        }
+
++ Response 401 (text/plain)
+
+        {
+            "message": "Unauthorized",
+        }
+
++ Response 403 (text/plain)
+
+        {
+            "message": "Forbidden",
+        }
+
++ Response 404 (text/plain)
+
+        {
+            "message": "Not Found",
+        }
+        
++ Response 408 (text/plain)
+
+        {
+            "message": "Request Timeout",
+        }        
+        
+
++ Response 500 (text/plain)
+
+        {
+            "message": "Internal Server Error",
+        }
+        
++ Response 502 (text/plain)
+
+        {
+            "message": "Bad Gateway",
+        }
+        
++ Response 503 (text/plain)
+
+        {
+            "message": "Service Unavailable",
         }
